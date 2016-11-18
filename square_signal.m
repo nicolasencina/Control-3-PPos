@@ -1,4 +1,4 @@
-function [time, signal] = square_signal(frec, vpp, time, points)
+function [time, signal, delta_T] = square_signal(frec, vpp, time, points)
     period = 1/frec;
     delta_T = time/(points-1);
     time = linspace(0, time, points);
