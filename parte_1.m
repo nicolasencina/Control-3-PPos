@@ -54,5 +54,14 @@ xlim([0 0.001])
 figure, plot(t,modulada_con_ruido)
 xlim([0 0.001])
 
+%Demodulación con función de Matlab
+deltaf1=75;
+deltaf2=100;
+deltaf=deltaf1;        %Selección de desviación
+z = fmdemod(modulated,mod_frec,Fs,deltaf)
+figure
+plot(t,z)
+
+
 
 
