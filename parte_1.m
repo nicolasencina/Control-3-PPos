@@ -1,7 +1,7 @@
 frecuencia_signal = 500;    % Frecuencia de 500 Hz
 v_pp = 1.5;                 % Voltaje peak to peak
-time = 0.02;                % Tiempo a graficar
-n_puntos = 10000;            % Número de puntos
+time = 0.05;                % Tiempo a graficar
+n_puntos = 100000;            % Número de puntos
 
 %sampling_period = time/(n_puntos - 1);
 %sampling_freq = 1/sampling_period;
@@ -35,7 +35,7 @@ mod_frec = 10*1000;     %Frecuencia modulación 10 kHz
 moduladora = signal;
 kf = 628.3;
 kf = 837.75;
-modulated = F_modulator(amplitud, mod_frec, kf, moduladora, T);
+modulated = F_modulator(amplitud, mod_frec, kf, moduladora, T, t);
 
 figure, plot(t,modulated)
 
