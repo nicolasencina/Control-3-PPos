@@ -21,11 +21,11 @@ P1 = P2(1:L/2+1);
 P1(2:end-1) = 2*P1(2:end-1);
 
 f = Fs*(0:(L/2))/L;
-% figure, plot(f,P1)
-% title('Single-Sided Amplitude Spectrum of X(t)')
-% xlabel('f (Hz)')
-% ylabel('|P1(f)|')
-% xlim([0 3000]);
+figure, plot(f,P1)
+title('Single-Sided Amplitude Spectrum of X(t)')
+xlabel('f (Hz)')
+ylabel('|P1(f)|')
+xlim([0 3000]);
 
 % integral=cumsum(signal)*T;
 % figure
@@ -43,7 +43,7 @@ kf = k_f (deltaf, v_pp/2);
 
 modulated = F_modulator(amplitud, mod_frec, kf, moduladora, T, t);
 
-figure, plot(t,modulated)
+figure, plot(t,modulated), title('Señal modulada')
 xlim([0 0.001])
 
 %SNR = 15;
@@ -52,17 +52,29 @@ modulada_con_ruido = ruido_awgn(modulated, amplitud, SNR);
 
 mod_con_ruido = awgn(modulated, SNR); 
 
-figure, plot(t,mod_con_ruido)
+figure, plot(t,mod_con_ruido), title('Señal modulada con ruido gaussiano')
 xlim([0 0.001])
 
-figure, plot(t,modulada_con_ruido)
+figure, plot(t,modulada_con_ruido),  title('Señal modulada con ruido gaussiano')
 xlim([0 0.001])
+
+%Ancho de banda (Regla de Carson)
+
+
+
+%Filtrado pasa bajos (ESTO NO SIRVE, max frec de corte=50)
+input=modulada_con_ruido;
+d = fdesign.lowpass('Fp,Fst,Ap,Ast',40,50,0.5,40,100);
+Hd = design(d,'equiripple');
+output = filter(Hd,input);
+fvtool(Hd)                                         %Respuesta del filtro
+plot(psd(spectrum.periodogram,output,'Fs',100))    %Espectro post-filtro
 
 %Demodulación con función de Matlab
 
-z = fmdemod(modulada_con_ruido ,mod_frec,Fs,deltaf);
+z = fmdemod(output,mod_frec,Fs,deltaf);
 figure
-plot(t,z)
+plot(t,z), title('Señal demodulada mediante fmdemod')
 xlim([0 0.05])
 
 
