@@ -35,15 +35,19 @@ f = Fs*(0:(L/2))/L;
 amplitud = 3/2;         %Vpp = 3 voltios
 mod_frec = 10*1000;     %Frecuencia modulación 10 kHz
 moduladora = signal;
-kf = 628.3;
-kf = 837.75;
+
+deltaf1=75;
+deltaf2=100;
+deltaf=deltaf1;
+kf = k_f (deltaf, v_pp/2);
+
 modulated = F_modulator(amplitud, mod_frec, kf, moduladora, T, t);
 
 figure, plot(t,modulated)
 xlim([0 0.001])
 
-SNR = 50;
-%SNR = 30;
+%SNR = 15;
+SNR = 30;
 modulada_con_ruido = ruido_awgn(modulated, amplitud, SNR);
 
 mod_con_ruido = awgn(modulated, SNR); 
@@ -55,12 +59,12 @@ figure, plot(t,modulada_con_ruido)
 xlim([0 0.001])
 
 %Demodulación con función de Matlab
-deltaf1=75;
-deltaf2=100;
-deltaf=deltaf1;        %Selección de desviación
-z = fmdemod(modulated,mod_frec,Fs,deltaf)
+
+z = fmdemod(modulada_con_ruido ,mod_frec,Fs,deltaf);
 figure
 plot(t,z)
+xlim([0 0.05])
+
 
 
 
