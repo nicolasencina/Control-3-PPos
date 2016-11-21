@@ -36,7 +36,7 @@ amplitud = 3/2;         %Vpp = 3 voltios
 mod_frec = 10*1000;     %Frecuencia modulación 10 kHz
 moduladora = signal;
 
-deltaf1=75;
+deltaf1=3000;
 deltaf2=100;
 deltaf=deltaf1;
 kf = k_f (deltaf, v_pp/2);
@@ -133,7 +133,7 @@ ylabel('Magnitude')
 % ylabel('Amplitude')
  
 %Use a band reject filter in place of a low pass filter
-[b_stop a_stop] = butter(5, [0.05 0.07], 'bandpass');
+[b_stop a_stop] = butter(1, [0.05 0.07], 'bandpass');
  
 %plot the magnitude spectrum
 H_stopband = freqz(b_stop,a_stop, floor(num_bins/2));
@@ -207,6 +207,46 @@ z = fmdemod(x_filtered_stop,mod_frec,Fs,deltaf);
 figure
 plot(t,z), title('Señal demodulada mediante fmdemod')
 xlim([0 0.05])
+
+%Demod casera
+deri=diff(x_filtered_stop);
+t2=t(1:length(t)-1);
+figure
+plot(t2,deri)
+
+%plot magnitude spectrum of the signal
+x2=abs(deri);
+X2_mags = abs(fft(x2));
+X2_mags = X2_mags/(1.1*max(X2_mags));
+figure(10)
+plot(X2_mags)
+xlabel('DFT Bins')
+ylabel('Magnitude')
+ 
+%plot first half of DFT (normalised frequency)
+num_bins2 = length(X2_mags);
+plot([0:1/(num_bins2/2 -1):1], X_mags(1:num_bins2/2))
+xlabel('Normalised frequency (\pi rads/sample)')
+ylabel('Magnitude')
+
+%Redesign the filter using a higher order filter
+[b2 a2] = butter(1, 0.01, 'low')
+ 
+%Plot the magnitude spectrum and compare with lower order filter
+H2 = freqz(b2,a2, floor(num_bins2/2));
+hold on
+plot([0:1/(num_bins2/2 -1):1], abs(H2),'g');
+ 
+%filter the noisy signal and plot the result
+x_filtered2 = filter(b2,a2,x2);
+figure
+plot(x_filtered2,'g')
+title('Filtered Signal - Using 20th Order Butterworth')
+xlabel('Samples');
+ylabel('Amplitude')
+
+
+ 
 
 
 
