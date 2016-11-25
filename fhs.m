@@ -8,7 +8,7 @@ function y = fhs(signal,Fs,alfa)
     
     f = Fs*(0:(L/2))/L;
     figure, plot(f,P1)
-    title('Single-Sided Amplitude Spectrum of X(t),2')
+%     title('Single-Sided Amplitude Spectrum of X(t),2')
     xlabel('f (Hz)')
     ylabel('|P1(f)|')
     flim=floor(Fs/2);

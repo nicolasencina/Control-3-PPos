@@ -1,10 +1,14 @@
+%--------------------------------------------------------------------------
+%--------------------------------------------------------------------------
+% 1)SEÑAL CUADRADA
+%--------------------------------------------------------------------------
+%--------------------------------------------------------------------------
+%Generación de señal cuadrada
+
 frecuencia_signal = 500;    % Frecuencia de 500 Hz
 v_pp = 1.5;                 % Voltaje peak to peak
 time = 0.3;                % Tiempo a graficar
 n_puntos = 100000;            % Número de puntos
-
-%sampling_period = time/(n_puntos - 1);
-%sampling_freq = 1/sampling_period
 
 [t ,signal, sampling_period] = square_signal(frecuencia_signal, v_pp, time, n_puntos);
 
@@ -13,6 +17,8 @@ n_puntos = 100000;            % Número de puntos
 T = sampling_period;
 Fs = 1/T;
 L = n_puntos;
+%--------------------------------------------------------------------------
+%Display fft por código(mitad del espectro positiva , sin réplica)
 
 Y = fft(signal);
 
@@ -22,15 +28,21 @@ P1(2:end-1) = 2*P1(2:end-1);
 
 f = Fs*(0:(L/2))/L;
 figure, plot(f,P1)
-title('Single-Sided Amplitude Spectrum of X(t)')
+title('Espectro de señal moduladora')
 xlabel('f (Hz)')
 ylabel('|P1(f)|')
 xlim([0 3000]);
+%--------------------------------------------------------------------------
+%Display fft por función (mitad del espectro positiva , sin réplica)
 
-% integral=cumsum(signal)*T;
-% figure
-% subplot(1,2,1), plot(t,signal)
-% subplot(1,2,2), plot(t,integral)
+fhs(signal,Fs,0.02)
+title(('Espectro de señal moduladora'))
+%--------------------------------------------------------------------------
+%--------------------------------------------------------------------------
+% 2)MODULACIÓN DE LA SEÑAL
+%--------------------------------------------------------------------------
+%--------------------------------------------------------------------------
+%Generación de señal modulada
 
 amplitud = 3/2;         %Vpp = 3 voltios
 mod_frec = 10*1000;     %Frecuencia modulación 10 kHz
@@ -42,27 +54,54 @@ deltaf=deltaf1;
 kf = k_f (deltaf, v_pp/2);
 
 modulated = F_modulator(amplitud, mod_frec, kf, moduladora, T, t);
+%--------------------------------------------------------------------------
+%Display de señal modulada
 
+%En el tiempo
 figure, plot(t,modulated), title('Señal modulada')
-xlim([0 0.001])
+xlim([0 0.01])
+ylim([-2 2])
 
-%SNR = 15;
+%En frecuencia
+fhs(modulated,Fs,0.3)
+title('Espectro de la señal modulada')
+
+
+%--------------------------------------------------------------------------
+%--------------------------------------------------------------------------
+% 3)ADICIÓN DE AWGN
+%--------------------------------------------------------------------------
+%--------------------------------------------------------------------------
+%Generación de señal ruidosa
+
+%SNR = 15;        %Niveles de ruido
 SNR = 30;
-modulada_con_ruido = ruido_awgn(modulated, amplitud, SNR);
+modulada_con_ruido = ruido_awgn(modulated, amplitud, SNR); %Fn propia
 
-mod_con_ruido = awgn(modulated, SNR); 
+mod_con_ruido = awgn(modulated, SNR);                      %Fn predefinida
+%--------------------------------------------------------------------------
+%Display de señal ruidosa (matlab y propia)
 
+%En el tiempo
 figure, plot(t,mod_con_ruido), title('Señal modulada con ruido gaussiano')
-xlim([0 0.001])
+xlim([0 0.01])
 
 figure, plot(t,modulada_con_ruido),  title('Señal modulada con ruido gaussiano')
-xlim([0 0.001])
+xlim([0 0.01])
 
-%Ancho de banda (Regla de Carson)
+%En frecuencia
+fhs(mod_con_ruido,Fs,0.3)
+title('Espectro de la señal modulada con ruido')
 
-
-
+fhs(modulada_con_ruido,Fs,0.3)
+title('Espectro de la señal modulada con ruido')
+%--------------------------------------------------------------------------
+%--------------------------------------------------------------------------
+% 4)DEMODULACIÓN DE LA SEÑAL
+%--------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %Filtrado pasa bajos (ESTO NO SIRVE, max frec de corte=50)
+
 input=modulada_con_ruido;
 % d = fdesign.lowpass('Fp,Fst,Ap,Ast',40,50,0.5,40,100);
 % Hd = design(d,'equiripple');
@@ -70,9 +109,9 @@ input=modulada_con_ruido;
 % fvtool(Hd)                                         %Respuesta del filtro
 % plot(psd(spectrum.periodogram,output,'Fs',100))    %Espectro post-filtro
 
-%Segundo intento: Butter
-%-------------------------------------------------------------------------
 
+%-------------------------------------------------------------------------
+%Segundo intento: Butter
 %generate the noisy signal which will be filtered
 x=input;
 % This script is available at https://dadorran.wordpress.com search for
@@ -85,7 +124,7 @@ ylabel('Amplitude')
 %plot magnitude spectrum of the signal
 X_mags = abs(fft(x));
 X_mags = X_mags/(1.1*max(X_mags));
-figure(10)
+figure
 plot(X_mags)
 xlabel('DFT Bins')
 ylabel('Magnitude')
@@ -142,7 +181,7 @@ plot([0:1/(num_bins/2 -1):1], abs(H_stopband),'c');
  
 %plot filtered signal
 x_filtered_stop = filter(b_stop,a_stop,x);
-figure(4);
+figure;
 plot(x_filtered_stop,'c')
 title('Filtered Signal - Using Bandpass')
 xlabel('Samples');
@@ -200,13 +239,14 @@ ylabel('Amplitude')
 % xlabel('Normalised Frequency ');
 % ylabel('Magnitude (dB)')
 
-%-------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %Demodulación con función de Matlab
 
 z = fmdemod(x_filtered_stop,mod_frec,Fs,deltaf);
 figure
 plot(t,z), title('Señal demodulada mediante fmdemod')
 xlim([0 0.05])
+%--------------------------------------------------------------------------
 
 %Demod casera
 deri=diff(x_filtered_stop);
@@ -218,7 +258,7 @@ plot(t2,deri)
 x2=abs(deri);
 X2_mags = abs(fft(x2));
 X2_mags = X2_mags/(1.1*max(X2_mags));
-figure(10)
+figure
 plot(X2_mags)
 xlabel('DFT Bins')
 ylabel('Magnitude')
