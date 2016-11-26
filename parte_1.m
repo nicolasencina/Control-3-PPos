@@ -12,7 +12,8 @@ n_puntos = 100000;            % Número de puntos
 
 [t ,signal, sampling_period] = square_signal(frecuencia_signal, v_pp, time, n_puntos);
 
-% figure, plot(t, signal)
+figure, plot(t, signal)
+xlim([0 0.02])
 
 T = sampling_period;
 Fs = 1/T;
@@ -84,10 +85,10 @@ mod_con_ruido = awgn(modulated, SNR);                      %Fn predefinida
 
 %En el tiempo
 figure, plot(t,mod_con_ruido), title('Señal modulada con ruido gaussiano')
-xlim([0 0.01])
+xlim([0 0.02])
 
 figure, plot(t,modulada_con_ruido),  title('Señal modulada con ruido gaussiano')
-xlim([0 0.01])
+xlim([0 0.02])
 
 %En frecuencia
 fhs(mod_con_ruido,Fs,0.3)
@@ -100,26 +101,41 @@ title('Espectro de la señal modulada con ruido')
 % 4)DEMODULACIÓN DE LA SEÑAL
 %--------------------------------------------------------------------------
 %--------------------------------------------------------------------------
-%Filtrado pasa bajos (ESTO NO SIRVE, max frec de corte=50)
+%Filtrado pasa bajos 
 
 input=modulada_con_ruido;
-% d = fdesign.lowpass('Fp,Fst,Ap,Ast',40,50,0.5,40,100);
-% Hd = design(d,'equiripple');
-% output = filter(Hd,input);
-% fvtool(Hd)                                         %Respuesta del filtro
-% plot(psd(spectrum.periodogram,output,'Fs',100))    %Espectro post-filtro
-
-
+d = fdesign.lowpass('N,Fc',100,20000,Fs);
+Hd = design(d);
+output = filter(Hd,input);
+fvtool(Hd)                                         %Respuesta del filtro
+plot(psd(spectrum.periodogram,output,'Fs',Fs))    %Espectro post-filtro
+figure,plot(t,input)
+xlim([0 0.02])
+figure,plot(t,output)
+xlim([0 0.02])
 %-------------------------------------------------------------------------
-%Segundo intento: Butter
+%Filtrado pasa banda
+
+d2 = fdesign.bandpass('N,F3dB1,F3dB2',2,7000,14000,Fs); 
+Hd2 = design(d2);
+output2 = filter(Hd2,input);
+fvtool(Hd2)                                         %Respuesta del filtro
+plot(psd(spectrum.periodogram,output2,'Fs',Fs))    %Espectro post-filtro
+figure,plot(t,input)
+xlim([0 0.02])
+figure,plot(t,output2)
+xlim([0 0.02])
+%-------------------------------------------------------------------------
+%Segundo intento: filtros youtube
+
 %generate the noisy signal which will be filtered
 x=input;
 % This script is available at https://dadorran.wordpress.com search for
 % filtering matlab demo
-plot(x)
-title('Noisy signal')
-xlabel('Samples');
-ylabel('Amplitude')
+% plot(x)
+% title('Noisy signal')
+% xlabel('Samples');
+% ylabel('Amplitude')
  
 %plot magnitude spectrum of the signal
 X_mags = abs(fft(x));
@@ -129,7 +145,7 @@ plot(X_mags)
 xlabel('DFT Bins')
 ylabel('Magnitude')
  
-%plot first half of DFT (normalised frequency)
+% plot first half of DFT (normalised frequency)
 num_bins = length(X_mags);
 plot([0:1/(num_bins/2 -1):1], X_mags(1:num_bins/2))
 xlabel('Normalised frequency (\pi rads/sample)')
@@ -242,17 +258,28 @@ ylabel('Amplitude')
 %--------------------------------------------------------------------------
 %Demodulación con función de Matlab
 
-z = fmdemod(x_filtered_stop,mod_frec,Fs,deltaf);
+% demod_in=modulada_con_ruido;
+demod_in=output;
+% demod_in=output2;
+% demod_in=x_filtered_stop
+
+
+z = fmdemod(demod_in,mod_frec,Fs,deltaf);
 figure
 plot(t,z), title('Señal demodulada mediante fmdemod')
-xlim([0 0.05])
+xlim([0 0.02])
 %--------------------------------------------------------------------------
+%Demodulación por bloques
 
-%Demod casera
-deri=diff(x_filtered_stop);
+%Derivada de la señal
+deri=diff(demod_in);
 t2=t(1:length(t)-1);
 figure
 plot(t2,deri)
+title('Derivada de la señal modulada')
+xlabel('Tiempo')
+ylabel('Amplitud')
+xlim([0 0.02])
 
 %plot magnitude spectrum of the signal
 x2=abs(deri);
@@ -284,6 +311,21 @@ plot(x_filtered2,'g')
 title('Filtered Signal - Using 20th Order Butterworth')
 xlabel('Samples');
 ylabel('Amplitude')
+
+d3 = fdesign.lowpass('N,Fc',200,500,Fs);
+designmethods(d3)
+Hd3 = design(d3);
+output3 = filter(Hd3,x2);
+fvtool(Hd3)                                         %Respuesta del filtro
+plot(psd(spectrum.periodogram,output3,'Fs',Fs))    %Espectro post-filtro
+figure,plot(t2,x2)
+xlim([0 0.02])
+figure,plot(t2,output3)
+xlim([0 0.02])
+
+
+
+
 
 
  
