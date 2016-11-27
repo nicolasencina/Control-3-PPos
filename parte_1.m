@@ -104,7 +104,7 @@ title('Espectro de la señal modulada con ruido')
 %Filtrado pasa bajos 
 
 input=modulada_con_ruido;
-d = fdesign.lowpass('N,Fc',100,20000,Fs);
+d = fdesign.lowpass('N,Fc',100,20000,Fs); %Parámetros: orden de filtro y frecuencia de corte
 Hd = design(d);
 output = filter(Hd,input);
 fvtool(Hd)                                         %Respuesta del filtro
@@ -116,7 +116,7 @@ xlim([0 0.02])
 %-------------------------------------------------------------------------
 %Filtrado pasa banda
 
-d2 = fdesign.bandpass('N,F3dB1,F3dB2',2,7000,14000,Fs); 
+d2 = fdesign.bandpass('N,F3dB1,F3dB2',2,7000,14000,Fs); %Parámetros: orden de filtro y frecuencias de corte
 Hd2 = design(d2);
 output2 = filter(Hd2,input);
 fvtool(Hd2)                                         %Respuesta del filtro
@@ -128,7 +128,7 @@ xlim([0 0.02])
 %-------------------------------------------------------------------------
 %Segundo intento: filtros youtube
 
-%generate the noisy signal which will be filtered
+%generate the noisy signal which will be filtered /señal a filtrar
 x=input;
 % This script is available at https://dadorran.wordpress.com search for
 % filtering matlab demo
@@ -188,7 +188,7 @@ ylabel('Magnitude')
 % ylabel('Amplitude')
  
 %Use a band reject filter in place of a low pass filter
-[b_stop a_stop] = butter(1, [0.05 0.07], 'bandpass');
+[b_stop a_stop] = butter(1, [0.05 0.07], 'bandpass'); %Parámetros: Orden y frecs de corte
  
 %plot the magnitude spectrum
 H_stopband = freqz(b_stop,a_stop, floor(num_bins/2));
@@ -256,7 +256,7 @@ ylabel('Amplitude')
 % ylabel('Magnitude (dB)')
 
 %--------------------------------------------------------------------------
-%Demodulación con función de Matlab
+%Demodulación con función de Matlab (descomentar la que se quiere filtrar)
 
 % demod_in=modulada_con_ruido;
 demod_in=output;
@@ -297,7 +297,7 @@ xlabel('Normalised frequency (\pi rads/sample)')
 ylabel('Magnitude')
 
 %Redesign the filter using a higher order filter
-[b2 a2] = butter(1, 0.01, 'low')
+[b2 a2] = butter(1, 0.01, 'low') %Orden y frec de corte
  
 %Plot the magnitude spectrum and compare with lower order filter
 H2 = freqz(b2,a2, floor(num_bins2/2));
@@ -312,7 +312,7 @@ title('Filtered Signal - Using 20th Order Butterworth')
 xlabel('Samples');
 ylabel('Amplitude')
 
-d3 = fdesign.lowpass('N,Fc',200,500,Fs);
+d3 = fdesign.lowpass('N,Fc',200,500,Fs); % Orden y frec de corte
 designmethods(d3)
 Hd3 = design(d3);
 output3 = filter(Hd3,x2);
